@@ -295,7 +295,19 @@ function ProductOptions({option}) {
  */
 function AddToCartButton({analytics, children, disabled, lines, onClick}) {
   return (
-    <CartForm route="/cart" inputs={{lines}} action={CartForm.ACTIONS.LinesAdd}>
+    <CartForm
+      route="/cart"
+      inputs={{
+        lines,
+        attributes: [
+          {
+            key: 'My Custom Attribute',
+            value: 'My Custom Value',
+          },
+        ],
+      }}
+      action="CustomAddLinesAndUpdateAttributes"
+    >
       {(fetcher) => (
         <>
           <input

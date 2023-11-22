@@ -32,37 +32,42 @@ export async function action({request, context}) {
   let status = 200;
   let result;
 
-  switch (action) {
-    case CartForm.ACTIONS.LinesAdd:
-      result = await cart.addLines(inputs.lines);
-      break;
-    case CartForm.ACTIONS.LinesUpdate:
-      result = await cart.updateLines(inputs.lines);
-      break;
-    case CartForm.ACTIONS.LinesRemove:
-      result = await cart.removeLines(inputs.lineIds);
-      break;
-    case CartForm.ACTIONS.DiscountCodesUpdate: {
-      const formDiscountCode = inputs.discountCode;
+  if (action === 'CustomAddLinesAndUpdateAttributes') {
+    await cart.updateAttributes(inputs.attributes);
+    result = await cart.addLines(inputs.lines);
+  } else {
+    switch (action) {
+      case CartForm.ACTIONS.LinesAdd:
+        result = await cart.addLines(inputs.lines);
+        break;
+      case CartForm.ACTIONS.LinesUpdate:
+        result = await cart.updateLines(inputs.lines);
+        break;
+      case CartForm.ACTIONS.LinesRemove:
+        result = await cart.removeLines(inputs.lineIds);
+        break;
+      case CartForm.ACTIONS.DiscountCodesUpdate: {
+        const formDiscountCode = inputs.discountCode;
 
-      // User inputted discount code
-      const discountCodes = formDiscountCode ? [formDiscountCode] : [];
+        // User inputted discount code
+        const discountCodes = formDiscountCode ? [formDiscountCode] : [];
 
-      // Combine discount codes already applied on cart
-      discountCodes.push(...inputs.discountCodes);
+        // Combine discount codes already applied on cart
+        discountCodes.push(...inputs.discountCodes);
 
-      result = await cart.updateDiscountCodes(discountCodes);
-      break;
+        result = await cart.updateDiscountCodes(discountCodes);
+        break;
+      }
+      case CartForm.ACTIONS.BuyerIdentityUpdate: {
+        result = await cart.updateBuyerIdentity({
+          ...inputs.buyerIdentity,
+          customerAccessToken: customerAccessToken?.accessToken,
+        });
+        break;
+      }
+      default:
+        throw new Error(`${action} cart action is not defined`);
     }
-    case CartForm.ACTIONS.BuyerIdentityUpdate: {
-      result = await cart.updateBuyerIdentity({
-        ...inputs.buyerIdentity,
-        customerAccessToken: customerAccessToken?.accessToken,
-      });
-      break;
-    }
-    default:
-      throw new Error(`${action} cart action is not defined`);
   }
 
   const cartId = result.cart.id;
